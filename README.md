@@ -21,7 +21,11 @@
 <p>yum install ansible
 <li>Отредактировал config file = /etc/ansible/ansible.cfg</li>  
 <p>inventory      = /root/ansible/hosts
-<p>host_key_checking = false  
+<p>host_key_checking = false
+<li>Создать ssh key</li>
+<p>ssh-keygen
+<li>Скопировать ssh key на клиентскую VM</li>
+<p>Скопировал ssh key в директорию клиенской VM /root/.ssh/authorized_keys  
 <li>Создал inventory file в директории /root/ansible/hosts</li>
 <li>Отредактировал файл hosts</li>
 <p>[web1]
