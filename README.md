@@ -44,5 +44,20 @@
 <p>  ansible_host: 192.168.56.104
 <p>  ansible_user: root
 <p>  ansible_ssh_private_key_file: /root/.ssh/client01
-<li></li>  
+<li>Проверил доступность управляемых хостов</li>
+<p>  [root@ans-server ansible]# ansible all -i hosts -m ping
+<p>ans-client-01 | SUCCESS => {
+<p>    "ansible_facts": {
+<p>        "discovered_interpreter_python": "/usr/bin/python"
+<p>    },
+<p>    "changed": false,
+<p>   "ping": "pong"
+<p>}
+<p>ans-client-02 | SUCCESS => {
+<p>    "ansible_facts": {
+<p>        "discovered_interpreter_python": "/usr/bin/python"
+<p>    },
+<p>    "changed": false,
+<p>    "ping": "pong"
+<p>}
 </ul>  
