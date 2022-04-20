@@ -1,0 +1,4 @@
+ansible_host: 192.168.56.104
+ansible_user: root
+ansible_ssh_private_key_file: /root/.ssh/client01
+nginx_listen_port: 8080

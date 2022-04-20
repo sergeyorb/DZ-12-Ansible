@@ -1,0 +1,132 @@
+[root@ans-server group_vars]# pwd
+/root/ansible/group_vars
+[root@ans-server group_vars]# cd ..
+[root@ans-server ansible]# pwd
+/root/ansible
+[root@ans-server ansible]# clear
+[root@ans-server ansible]# ll
+total 12
+-rw-r--r--. 1 root root 940 Apr 17 09:25 epel.yml
+drwxr-xr-x. 2 root root  30 Apr 11 05:08 group_vars
+-rw-r--r--. 1 root root  76 Apr 11 05:11 hosts
+-rw-r--r--. 1 root root 246 Apr 13 13:43 ping.yml
+drwxr-xr-x. 2 root root  27 Apr 17 09:00 templates
+[root@ans-server ansible]# ansible --version
+ansible 2.9.27
+  config file = /etc/ansible/ansible.cfg
+  configured module search path = [u'/root/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python2.7/site-packages/ansible
+  executable location = /bin/ansible
+  python version = 2.7.5 (default, Oct 14 2020, 14:45:30) [GCC 4.8.5 20150623 (Red Hat 4.8.5-44)]
+[root@ans-server ansible]# cat epel.yml
+- name: Install EPEL Repo
+  hosts: web1
+  become: true
+  vars:
+    nginx_listen_port: 8080
+
+  tasks:
+    - name: NGINX | Install EPEL Repo package from standart repo
+      yum:
+        name: epel-release
+        state: present
+      tags:
+        - epel-package
+        - packages
+
+    - name: NGINX | Install NGINX package from EPEL Repo
+      yum:
+        name: nginx
+        state: latest
+      notify:
+        -restart nginx
+      tags:
+        - nginx-package
+        - packages
+
+    - name: NGINX | Create NGINX config file from template
+      template:
+        src: /root/ansible/templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify:
+        - reload nginx
+      tags:
+        - nginx-configuration
+
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+
+
+[root@ans-server ansible]# cat hosts
+[web1]
+ans-client-01
+
+[web2]
+ans-client-02
+
+[all_groups:children]
+web1
+web2
+[root@ans-server ansible]# cd grooup_vars
+-bash: cd: grooup_vars: No such file or directory
+[root@ans-server ansible]# cd group_vars
+[root@ans-server group_vars]# ll
+total 8
+-rw-r--r--. 1 root root 125 Apr 17 11:25 web1
+-rw-r--r--. 1 root root  77 Apr 11 05:10 web2
+[root@ans-server group_vars]# cat web1
+ansible_host: 192.168.56.104
+ansible_user: root
+ansible_ssh_private_key_file: /root/.ssh/client01
+nginx_listen_port: 8080
+[root@ans-server group_vars]# cd ..
+[root@ans-server ansible]# cd templates
+[root@ans-server templates]# ll
+total 4
+-rw-r--r--. 1 root root 267 Apr 17 04:10 nginx.conf.j2
+[root@ans-server templates]# cat nginx.conf.j2
+# {{ ansible_managed }}
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        listen       {{ nginx_listen_port }} default_server;
+        server_name  default_server;
+        root         /usr/share/nginx/html;
+
+        location / {
+        }
+    }
+}
+[root@ans-server templates]#
+[root@ans-server ansible]# ansible-playbook epel.yml
+
+PLAY [Install EPEL Repo] *************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************************************************************************************************
+ok: [ans-client-01]
+
+TASK [NGINX | Install EPEL Repo package from standart repo] **************************************************************************************************************************************************
+ok: [ans-client-01]
+
+TASK [NGINX | Install NGINX package from EPEL Repo] **********************************************************************************************************************************************************
+ok: [ans-client-01]
+
+TASK [NGINX | Create NGINX config file from template] ********************************************************************************************************************************************************
+ok: [ans-client-01]
+
+PLAY RECAP ***************************************************************************************************************************************************************************************************
+ans-client-01              : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+[root@ans-server ansible]#

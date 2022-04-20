@@ -1,0 +1,9 @@
+[web1]
+ans-client-01
+
+[web2]
+ans-client-02
+
+[all_groups:children]
+web1
+web2
