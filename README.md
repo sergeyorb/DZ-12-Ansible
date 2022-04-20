@@ -12,7 +12,7 @@
 <p>ans-client-01 - VM для клиентов Ansible
 <p>ans-client-02 - VM для клиентов Ansible
 <p>Использовал образ CentOS 7 
-<p>Разворачивал вручную, но можно развернуть используя приложенный Vagrant файл  
+<p>Разворачивал вручную, но можно развернуть и используя приложенный Vagrant файл  
 </ul>
 
 # Установка и первоначальная настройка Ansible
@@ -77,5 +77,73 @@ mkdir epel.yml в директории /root/ansible
         state: present 
 <li>Проверил работу Playbook</li>
 ansible-playbook epel.yml
-  
+<li>Отредактировал epel.yml добавив строки</li>
+- name: NGINX | Install and configure NGINX
+  hosts: web1
+  become: true
+  vars:
+    nginx_listen_port: 8080
+
+  tasks:
+    - name: NGINX | Install EPEL Repo package from standart repo
+      yum:
+        name: epel-release
+        state: present
+      tags:
+        - epel-package
+        - packages
+
+    - name: NGINX | Install NGINX package from EPEL Repo
+      yum:
+        name: nginx
+        state: latest
+      notify:
+        - restart nginx
+      tags:
+        - nginx-package
+        - packages
+
+    - name: NGINX | Create NGINX config file from template
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify:
+        - reload nginx
+      tags:
+        - nginx-configuration
+
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+    
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded  
+<li>Создал файл шаблона</li>
+<p>В директории /root/ansible/templates создал файл nginx.conf.j2     
+<li>Отредактировал файл nginx.conf.j2 добавив следующие строки</li>
+# {{ ansible_managed }}
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        listen       {{ nginx_listen_port }} default_server;
+        server_name  default_server;
+        root         /usr/share/nginx/html;
+
+        location / {
+        }
+    }
+}  
+<li>Переопределил переменную nginx_listen_port</li>
+Добавил в файл web1 с глобальными переменными из директории /root/ansible/group_vars строку
+nginx_listen_port: 8080  
+<li>Запустил Playbook на выполнение командой</li>
+ansible-playbook -i hosts epel.yml  
 </ul>
