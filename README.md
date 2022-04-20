@@ -2,7 +2,7 @@
 <ol>
   <li>Создать стенд для выполнения домашнего задания</li>
   <li>Установка и первоначальная настройка Ansible</li>
-  
+  <li>Создание Playbook</li>
 </ol>
 
 # Создать стенд для выполнения домашнего задания
@@ -61,3 +61,20 @@
 <p>    "ping": "pong"
 <p>}
 </ul>  
+#Создание Playbook
+<ul>
+<li>Создал Playbook с именем epel.yml</li>
+mkdir epel.yml в директории /root/ansible
+<li>Отредактровал файл epel.yml</li>
+- name: Install EPEL Repo
+  hosts: web1
+  become: true
+  tasks:
+    - name: Install EPEL Repo package from standart repo
+      yum:
+        name: epel-release
+        state: present 
+<li>Проверил работу Playbook</li>
+ansible-playbook epel.yml
+  
+</ul>
